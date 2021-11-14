@@ -34,6 +34,8 @@ REWARD_FILLED_CELL = -10
 class Environment:
     def __init__(self):
         board = [[ROWS_NB], [COLS_NB]]
+        self.__current = {TOP: EMPTY, MIDDLE: EMPTY, BOTTOM: EMPTY}
+        #self.__next = {}
         self.__states = {}
         for row in range(ROWS_NB):
             for col in range(COLS_NB):
@@ -59,16 +61,22 @@ class Environment:
         else:
             raise 'Unknown action'
 
-    class Agent:
-        def __init__(self, environment, learning_rate=0.4, discount_factor=0.5):
-            self.__environment = environment
-            self.__learning_rate = learning_rate
-            self.__discount_factor = discount_factor
-            self.__qtable = {}
-            for s in self.__environment.states:
-                self.__qtable[s] = {}
-                for a in ACTIONS:
-                    self.__qtable[s][a] = 0.0
+    @property
+    def current(self):
+        return self.__current
 
-    if __name__ == '__main__':
-        print("ok")
+class Agent:
+    def __init__(self, environment, position, learning_rate=0.4, discount_factor=0.5):
+        self.__environment = environment
+        self.__color = environment.current(position)
+        self.__learning_rate = learning_rate
+        self.__discount_factor = discount_factor
+        self.__qtable = {}
+        for s in self.__environment.states:
+            self.__qtable[s] = {}
+            for a in ACTIONS:
+                self.__qtable[s][a] = 0.0
+
+if __name__ == '__main__':
+    env = Environment()
+    agents = [Agent(env, TOP), Agent(env, MIDDLE), Agent(env, BOTTOM)]
