@@ -1,24 +1,24 @@
+import numpy as np
+
+COLS_NB = 8
+ROWS_NB = 14
+BORDER = -1
+GROUND = -2
+
 DOWN = 'D'
 LEFT = 'L'
 RIGHT = 'R'
 CHANGE = 'X'
 ACTIONS = [CHANGE, DOWN, LEFT, RIGHT]
 
-TOP = 0
-MIDDLE = 1
-BOTTOM = 2
-
-COLS_NB = 6
-ROWS_NB = 13
-
-EMPTY = "EMPTY"
-RED = "RED"
-YELLOW = "YELLOW"
-GREEN = "GREEN"
-BLUE = "BLUE"
-PURPLE = "PURPLE"
-ORANGE = "ORANGE"
-SPECIAL = "SPECIAL"
+EMPTY = 0
+RED = 1
+YELLOW = 2
+GREEN = 3
+BLUE = 4
+PURPLE = 5
+ORANGE = 6
+SPECIAL = 7
 COLORS = [EMPTY, RED, YELLOW, GREEN, BLUE, PURPLE, ORANGE, SPECIAL]
 
 REWARD_CELL = 20
@@ -31,52 +31,58 @@ REWARD_BORDER = -10
 REWARD_FILLED_CELL = -10
 
 
+def create_board(rows, cols):
+    matrix = np.zeros((rows, cols))
+    matrix[0] = GROUND
+    matrix[:, 0] = BORDER
+    matrix[:, cols - 1] = BORDER
+    return matrix
+
+
+def check_clear_color():
+    pass
+
+
 class Environment:
     def __init__(self):
-        board = [[ROWS_NB], [COLS_NB]]
-        self.__current = {TOP: EMPTY, MIDDLE: EMPTY, BOTTOM: EMPTY}
-        #self.__next = {}
+        board = create_board(ROWS_NB, COLS_NB)
         self.__states = {}
-        for row in range(ROWS_NB):
-            for col in range(COLS_NB):
-                board[row][col] = EMPTY
+        for row in range(board.shape[0]):
+            for col in range(len(board[row]) - 1):
                 self.__states[(row, col)] = board[row][col]
-
-    def apply(self, agent, action):
-        state = agent.state
-        if action == DOWN:
-            new_state = (state[0] + 1, state[1])
-        elif action == LEFT:
-            new_state = (state[0], state[1] - 1)
-        elif action == RIGHT:
-            new_state = (state[0], state[1] + 1)
-        elif action == CHANGE:
-            position = agent.position
-            if position == TOP:
-                new_state = (state[0] + 1, state[1])
-            if position == MIDDLE:
-                new_state = (state[0] + 1, state[1])
-            if position == BOTTOM:
-                new_state = (state[0] - 2, state[1])
-        else:
-            raise 'Unknown action'
+            # if row == GROUND:
+            # elif col == BORDER:
+            #    self.__states[(row, col)] = board[row][col]
+            # else:
+            #   self.__states[(row, col)] = board[row][col]
+        print(self.__states)
+        print(board)
 
     @property
-    def current(self):
-        return self.__current
+    def states(self):
+        return self.__states.keys()
+
 
 class Agent:
-    def __init__(self, environment, position, learning_rate=0.4, discount_factor=0.5):
+    def __init__(self, environment, learning_rate=0.4, discount_factor=0.5):
+        self.__column = None
         self.__environment = environment
-        self.__color = environment.current(position)
         self.__learning_rate = learning_rate
         self.__discount_factor = discount_factor
         self.__qtable = {}
-        for s in self.__environment.states:
-            self.__qtable[s] = {}
-            for a in ACTIONS:
-                self.__qtable[s][a] = 0.0
+
+    def reset(self):
+        self.__score = 0
+
+    @property
+    def column(self):
+        return self.__column
+
+    @column.setter
+    def column(self, column):
+        self._column = column
+
 
 if __name__ == '__main__':
     env = Environment()
-    agents = [Agent(env, TOP), Agent(env, MIDDLE), Agent(env, BOTTOM)]
+    agent = Agent(env)
