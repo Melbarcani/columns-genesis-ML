@@ -58,6 +58,26 @@ class Environment:
         print(self.__states)
         print(board)
 
+    def apply(self, agent, action):
+        state = agent.state
+        if action == DOWN:
+            new_state = (state[0] + 1, state[1])
+        elif action == LEFT:
+            new_state = (state[0], state[1] - 1)
+        elif action == RIGHT:
+            new_state = (state[0], state[1] + 1)
+        elif action == CHANGE:
+            agent.column[0], agent.column[1], agent.column[2] = agent.column[2], agent.column[0], agent.column[1]
+            new_state = ((state[0], state[1]), agent.column)
+        else:
+            raise 'Unknown action'
+        if new_state in self.__states:
+            state = new_state
+            if self.__states[new_state] == BORDER:
+                reward = REWARD_BORDER
+            elif self.__states[new_state] == GROUND:
+                reward = check_clear_color()
+
     @property
     def states(self):
         return self.__states.keys()
