@@ -70,6 +70,10 @@ class Agent:
         self.__learning_rate = learning_rate
         self.__discount_factor = discount_factor
         self.__qtable = {}
+        for s in self.__environment.states:
+            self.__qtable[s] = {}
+            for a in ACTIONS:
+                self.__qtable[s][a] = 0.0
 
     def reset(self):
         self.__score = 0
