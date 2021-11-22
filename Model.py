@@ -71,9 +71,6 @@ def package_right_six_cells(board, row, col):
            board[row - 2][col + 1], board[row - 2][col + 2]
 
 
-
-
-
 class Environment:
     def __init__(self):
         board = create_board(ROWS_NB, COLS_NB)
