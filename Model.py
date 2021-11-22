@@ -71,6 +71,18 @@ def package_right_six_cells(board, row, col):
            board[row - 2][col + 1], board[row - 2][col + 2]
 
 
+def get_column(board, row, col):
+    array = [board[row][col]]
+    return get_column_helper(board, row, col, array, 0)
+
+
+def get_column_helper(board, row, col, array, counter):
+    if counter < 2 and row != 0:
+        array.append(board[row - 1][col])
+        get_column_helper(board, row - 1, col, array, counter + 1)
+    return array
+
+
 class Environment:
     def __init__(self):
         board = create_board(ROWS_NB, COLS_NB)
