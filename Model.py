@@ -32,16 +32,18 @@ REWARD_FILLED_CELL = -10
 
 
 def create_board(rows, cols):
-    matrix = np.zeros((rows, cols))
+    matrix = np.arange(14 * 8).reshape(rows, cols)
+    # matrix = np.zeros((rows, cols))
     matrix[ROWS_NB - 1] = GROUND
     matrix[:, 0] = BORDER
     matrix[:, cols - 1] = BORDER
-    matrix[:, 1] = 1
-    matrix[:, 2] = 2
-    matrix[:, 3] = 3
-    matrix[:, 4] = 4
-    matrix[:, 5] = 5
-    matrix[:, 6] = 6
+    # matrix[1][1] = 9
+    # matrix[:, 1] = 1
+    # matrix[:, 2] = 2
+    # matrix[:, 3] = 3
+    # matrix[:, 4] = 4
+    # matrix[:, 5] = 5
+    # matrix[:, 6] = 6
     return matrix
 
 
@@ -66,9 +68,8 @@ def package_right_and_left_cells(board, row, col):
 
 
 def package_right_six_cells(board, row, col):
-    return board[row][col + 1], board[row][col + 2], \
-           board[row - 1][col + 1], board[row - 1][col + 2], \
-           board[row - 2][col + 1], board[row - 2][col + 2]
+    return board[row][col + 1], board[row][col + 2], board[row - 1][col + 1], board[row - 1][col + 2], board[row - 2][
+        col + 1], board[row - 2][col + 2]
 
 
 def recursive(board, row, col):
@@ -85,12 +86,14 @@ def recursive_helper(board, row, col, row_count, array):
         else:
             array.append(package_right_and_left_cells(board, row, col))
     elif row_count < 2 and row < ROWS_NB - 2:
-        if col > 1:
+        if col > 1 + row_count:
             array.append(board[row + 1][col - 1 - row_count])
         array.append(board[row + 1][col])
         if col < COLS_NB - 1 - row_count:
-            array.append(board[row + 1][col + 1 + row_count])
+            if board[row + 1][col + 1 + row_count] != BORDER:
+                array.append(board[row + 1][col + 1 + row_count])
         recursive_helper(board, row + 1, col, row_count + 1, array)
+
     return array
 
 
