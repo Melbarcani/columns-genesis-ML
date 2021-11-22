@@ -61,6 +61,11 @@ def package_right_four_cells(board, row, col):
            board[row + 2][col], board[row + 2][col + 1]
 
 
+def package_right_and_left_four_cells(board, row, col):
+    return board[row - 1][col - 1], board[row - 1][col + 1], \
+           board[row - 2][col - 1], board[row - 2][col + 1]
+
+
 def package_right_and_left_cells(board, row, col):
     return board[row][col - 1], board[row][col + 1], \
            board[row - 1][col - 1], board[row - 1][col + 1], \
@@ -72,32 +77,41 @@ def package_right_six_cells(board, row, col):
         col + 1], board[row - 2][col + 2]
 
 
-def recursive(board, row, col):
+def get_nearest_cells(board, row, col):
     array = []
-    return recursive_helper(board, row, col, 0, array)
+    return get_nearest_cells_recursive_helper(board, row, col, 0, array)
 
 
-def recursive_helper(board, row, col, row_count, array):
-    if row_count < 2 and row == ROWS_NB - 2:
-        if col == 1:
-            array.append(package_right_six_cells(board, row, col))
-        elif col == 6:
-            array.append(package_right_six_cells(board, row, col - 3))
-        else:
-            array.append(package_right_and_left_cells(board, row, col))
+def get_nearest_cells_recursive_helper(board, row, col, row_count, array):
+    if row_count < 2 and row == ROWS_NB - 2 and len(array) < 3:
+        get_cells_when_too_close_to_ground(array, board, col, row)
+    elif row_count < 2 and row == ROWS_NB - 2 and len(array) == 3:
+        array.append(package_right_and_left_four_cells(board, row, col))
     elif row_count < 2 and row < ROWS_NB - 2:
-        if col > 1 + row_count:
-            array.append(board[row + 1][col - 1 - row_count])
-        array.append(board[row + 1][col])
-        if col < COLS_NB - 1 - row_count:
-            if board[row + 1][col + 1 + row_count] != BORDER:
-                array.append(board[row + 1][col + 1 + row_count])
-        recursive_helper(board, row + 1, col, row_count + 1, array)
-
+        get_nearest_cells_recursive_helper(board, row + 1, col, row_count + 1, array)
+        get_regular_cells(array, board, col, row, row_count)
     return array
 
 
-def get_column(board, row, col):
+def get_regular_cells(array, board, col, row, row_count):
+    if col > 1 + row_count:
+        array.append(board[row + 1][col - 1 - row_count])
+    array.append(board[row + 1][col])
+    if col < COLS_NB - 1 - row_count:
+        if board[row + 1][col + 1 + row_count] != BORDER:
+            array.append(board[row + 1][col + 1 + row_count])
+
+
+def get_cells_when_too_close_to_ground(array, board, col, row):
+    if col == 1:
+        array.append(package_right_six_cells(board, row, col))
+    elif col == COLS_NB - 2:
+        array.append(package_right_six_cells(board, row, col - 3))
+    else:
+        array.append(package_right_and_left_cells(board, row, col))
+
+
+def get_column_agent(board, row, col):
     array = [board[row][col]]
     return get_column_helper(board, row, col, array, 0)
 
@@ -115,7 +129,7 @@ class Environment:
         self.__states = {}
         for row in range(board.shape[0] - 1):
             for col in range(1, len(board[row]) - 1):
-                self.__states[(row, col)] = (get_column(board, row, col), recursive(board, row, col))
+                self.__states[(row, col)] = (get_column_agent(board, row, col), get_nearest_cells(board, row, col))
 
                 # self.__states[(row, col)] = board[row][col]
                 # if row == GROUND:
