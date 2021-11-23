@@ -32,8 +32,8 @@ REWARD_FILLED_CELL = -10
 
 
 def create_board(rows, cols):
-    matrix = np.arange(14 * 8).reshape(rows, cols)
-    # matrix = np.zeros((rows, cols))
+    #matrix = np.arange(14 * 8).reshape(rows, cols)
+    matrix = np.zeros((rows, cols))
     matrix[ROWS_NB - 1] = GROUND
     matrix[:, 0] = BORDER
     matrix[:, cols - 1] = BORDER
@@ -125,15 +125,28 @@ def get_column_helper(board, row, col, array, counter):
     return array
 
 
+def get_down(state, board):
+    print("ixi", state)
+    new_row = state[0][0]
+    new_col = state[0][1]
+    return {(new_row, new_col): (get_column_agent(board, new_row, new_col), get_nearest_cells(board, new_row, new_col))}
+
+
 class Environment:
     def __init__(self):
-        board = create_board(ROWS_NB, COLS_NB)
+        self.__board = create_board(ROWS_NB, COLS_NB)
         self.__states = {}
-        for row in range(board.shape[0] - 1):
-            for col in range(1, len(board[row]) - 1):
-                self.__states[(row, col)] = (get_column_agent(board, row, col), get_nearest_cells(board, row, col))
-                if col == 4 and row == 2:
-                    self.__start = (get_column_agent(board, row, col), get_nearest_cells(board, row, col))
+        for row in range(self.__board.shape[0]):
+            for col in range(0, len(self.__board[row])):
+                if col != 0 and col != COLS_NB and row != ROWS_NB:
+                    self.__states[(row, col)] = [[row, col], get_column_agent(self.__board, row, col),
+                                                 get_nearest_cells(self.__board, row, col)]
+                    if col == 4 and row == 2:
+                        self.__start = (row, col)
+                elif row == ROWS_NB:
+                    self.__states[(row, col)] = [[], [GROUND], []]
+                else:
+                    self.__states[(row, col)] = [[], [BORDER], []]
 
                     # self.__states[(row, col)] = board[row][col]
                 # if row == GROUND:
@@ -142,7 +155,7 @@ class Environment:
                 # else:
                 #   self.__states[(row, col)] = board[row][col]
         print(self.__states)
-        print(board)
+        print(self.__board)
 
     @property
     def states(self):
@@ -151,40 +164,44 @@ class Environment:
     def apply(self, agent, action):
         state = agent.state
         if action == DOWN:
-            print("state", state)
-            new_state = (state[0][0] + 1, state[0][1] + 1, state[0][2] + 1)
-            print("new state", new_state)
+            new_state = (state[0] + 1, state[1])
         elif action == LEFT:
             new_state = (state[0], state[1] - 1)
         elif action == RIGHT:
             new_state = (state[0], state[1] + 1)
         elif action == CHANGE:
-            agent.column[0], agent.column[1], agent.column[2] = agent.column[2], agent.column[0], agent.column[1]
-            new_state = ((state[0], state[1]), agent.column)
+            new_state = (state[0], state[1])
         else:
             raise 'Unknown action'
         if new_state in self.__states:
             state = new_state
-            if self.__states[new_state] == BORDER:
+
+            if self.__states[new_state][1][0] == BORDER:
                 reward = REWARD_BORDER
-            elif self.__states[new_state] == GROUND:
-                reward = check_clear_color()
+                state = agent.state
+            elif self.__states[new_state][1][0] == GROUND:
+                reward = REWARD_BORDER
+                state = agent.state
             else:
                 reward = REWARD_BORDER
         else:
+            print("LOSE")
             reward = REWARD_LOSE
 
         agent.update(state, action, reward)
         return reward
 
-
-    @property
-    def states(self):
-        return self.__states.keys()
+    # @property
+    # def states(self):
+    #     return self.__states.keys()
 
     @property
     def start(self):
         return self.__start
+
+    @property
+    def board(self):
+        return self.__board
 
 
 class Agent:
@@ -207,6 +224,7 @@ class Agent:
         # Q(s, a) <- Q(s, a) + learning_rate *
         #                     [reward + discount_factor * max(Q(state)) - Q(s, a)]
 
+        print("values", self.__qtable[state])
         maxQ = max(self.__qtable[state].values())
         self.__qtable[self.__state][action] += self.__learning_rate * (
                 reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
@@ -221,10 +239,6 @@ class Agent:
                     or self.__qtable[self.__state][a] > self.__qtable[self.__state][best]:
                 best = a
         return best
-
-    def reset(self):
-        self.__state = self.__environment.start
-        self.__score = 0
 
     @property
     def state(self):
@@ -246,6 +260,18 @@ if __name__ == '__main__':
     for i in range(2):
         print("ok")
         agent.reset()
+        # action = agent.best_action()
         env.apply(agent, DOWN)
-        # while True:
-        #   agent.column = [GREEN, GREEN, RED]
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
+        env.apply(agent, DOWN)
