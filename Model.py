@@ -177,6 +177,7 @@ class Environment:
         agent.update(state, action, reward)
         return reward
 
+
     @property
     def states(self):
         return self.__states.keys()
