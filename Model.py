@@ -33,7 +33,7 @@ REWARD_FILLED_CELL = -10
 
 def create_board(rows, cols):
     matrix = np.arange(14 * 8).reshape(rows, cols)
-    #matrix = np.zeros((rows, cols))
+    # matrix = np.zeros((rows, cols))
     matrix[ROWS_NB - 1] = GROUND
     matrix[:, 0] = BORDER
     matrix[:, cols - 1] = BORDER
@@ -132,8 +132,10 @@ class Environment:
         for row in range(board.shape[0] - 1):
             for col in range(1, len(board[row]) - 1):
                 self.__states[(row, col)] = (get_column_agent(board, row, col), get_nearest_cells(board, row, col))
+                if col == 4 and row == 2:
+                    self.__start = (get_column_agent(board, row, col), get_nearest_cells(board, row, col))
 
-                # self.__states[(row, col)] = board[row][col]
+                    # self.__states[(row, col)] = board[row][col]
                 # if row == GROUND:
                 # elif col == BORDER:
                 #    self.__states[(row, col)] = board[row][col]
@@ -149,7 +151,9 @@ class Environment:
     def apply(self, agent, action):
         state = agent.state
         if action == DOWN:
-            new_state = (state[0] + 1, state[1])
+            print("state", state)
+            new_state = (state[0][0] + 1, state[0][1] + 1, state[0][2] + 1)
+            print("new state", new_state)
         elif action == LEFT:
             new_state = (state[0], state[1] - 1)
         elif action == RIGHT:
@@ -165,17 +169,25 @@ class Environment:
                 reward = REWARD_BORDER
             elif self.__states[new_state] == GROUND:
                 reward = check_clear_color()
+            else:
+                reward = REWARD_BORDER
+        else:
+            reward = REWARD_LOSE
 
+        agent.update(state, action, reward)
+        return reward
 
     @property
     def states(self):
         return self.__states.keys()
 
+    @property
+    def start(self):
+        return self.__start
+
 
 class Agent:
     def __init__(self, environment, learning_rate=0.4, discount_factor=0.5):
-        self.__state = None
-        self.__column = None
         self.__environment = environment
         self.__learning_rate = learning_rate
         self.__discount_factor = discount_factor
@@ -184,20 +196,33 @@ class Agent:
             self.__qtable[s] = {}
             for a in ACTIONS:
                 self.__qtable[s][a] = 0.0
+        self.reset()
+
+    def reset(self):
+        self.__state = self.__environment.start
+        self.__score = 0
 
     def update(self, state, action, reward):
         # Q(s, a) <- Q(s, a) + learning_rate *
         #                     [reward + discount_factor * max(Q(state)) - Q(s, a)]
 
         maxQ = max(self.__qtable[state].values())
-        self.__qtable[self.__state][action] += self.__learning_rate * \
-                                               (reward + self.__discount_factor * \
-                                                maxQ - self.__qtable[self.__state][action])
+        self.__qtable[self.__state][action] += self.__learning_rate * (
+                reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
         print("state", state)
         self.__state = state
         self.__score += reward
 
+    def best_action(self):
+        best = None
+        for a in self.__qtable[self.__state]:
+            if not best \
+                    or self.__qtable[self.__state][a] > self.__qtable[self.__state][best]:
+                best = a
+        return best
+
     def reset(self):
+        self.__state = self.__environment.start
         self.__score = 0
 
     @property
@@ -219,5 +244,7 @@ if __name__ == '__main__':
 
     for i in range(2):
         print("ok")
+        agent.reset()
+        env.apply(agent, DOWN)
         # while True:
         #   agent.column = [GREEN, GREEN, RED]
