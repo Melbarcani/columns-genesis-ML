@@ -32,8 +32,9 @@ REWARD_FILLED_CELL = -10
 
 
 def create_board(rows, cols):
-    #matrix = np.arange(14 * 8).reshape(rows, cols)
+    # matrix = np.arange(14 * 8).reshape(rows, cols)
     matrix = np.zeros((rows, cols))
+    matrix.astype(int)
     matrix[ROWS_NB - 1] = GROUND
     matrix[:, 0] = BORDER
     matrix[:, cols - 1] = BORDER
@@ -163,6 +164,7 @@ class Environment:
 
     def apply(self, agent, action):
         state = agent.state
+        column = agent.column
         if action == DOWN:
             new_state = (state[0] + 1, state[1])
         elif action == LEFT:
@@ -170,12 +172,13 @@ class Environment:
         elif action == RIGHT:
             new_state = (state[0], state[1] + 1)
         elif action == CHANGE:
-            new_state = (state[0], state[1])
+            column[0], column[1], column[2] = column[1], column[2], column[0]
+            new_state = state
         else:
             raise 'Unknown action'
+
         if new_state in self.__states:
             state = new_state
-
             if self.__states[new_state][1][0] == BORDER:
                 reward = REWARD_BORDER
                 state = agent.state
@@ -183,7 +186,7 @@ class Environment:
                 reward = REWARD_BORDER
                 state = agent.state
             else:
-                reward = REWARD_BORDER
+                reward = 0
         else:
             print("LOSE")
             reward = REWARD_LOSE
@@ -209,6 +212,7 @@ class Agent:
         self.__environment = environment
         self.__learning_rate = learning_rate
         self.__discount_factor = discount_factor
+        self.__column = [0, 0, 0]
         self.__qtable = {}
         for s in self.__environment.states:
             self.__qtable[s] = {}
@@ -250,7 +254,7 @@ class Agent:
 
     @column.setter
     def column(self, column):
-        self._column = column
+        self.__column = column
 
 
 if __name__ == '__main__':
@@ -260,18 +264,8 @@ if __name__ == '__main__':
     for i in range(2):
         print("ok")
         agent.reset()
+        agent.column =[RED, YELLOW, GREEN]
         # action = agent.best_action()
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
-        env.apply(agent, DOWN)
+        print(agent.column)
+        env.apply(agent, CHANGE)
+        print("changeed", agent.column)
