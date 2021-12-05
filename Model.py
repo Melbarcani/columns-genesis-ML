@@ -1,4 +1,4 @@
-import Constants
+from Constants import *
 import numpy as np
 
 
@@ -6,9 +6,9 @@ def create_board(rows, cols):
     # matrix = np.arange(14 * 8).reshape(rows, cols)
     matrix = np.zeros((rows, cols))
     matrix.astype(int)
-    matrix[Constants.ROWS_NB - 1] = Constants.GROUND
-    matrix[:, 0] = Constants.BORDER
-    matrix[:, cols - 1] = Constants.BORDER
+    matrix[ROWS_NB - 1] = GROUND
+    matrix[:, 0] = BORDER
+    matrix[:, cols - 1] = BORDER
     # matrix[1][1] = 9
     # matrix[:, 1] = 1
     # matrix[:, 2] = 2
@@ -55,13 +55,13 @@ def get_nearest_cells(board, row, col):
 
 
 def get_nearest_cells_recursive_helper(board, row, col, row_count, array):
-    if row_count < 2 and row == Constants.ROWS_NB - 2 and len(array) < 3:
-        print()
+    if row_count < 2 and row == ROWS_NB - 2 and len(array) < 3:
+        a = 0
         # get_cells_when_too_close_to_ground(array, board, col, row)
-    elif row_count < 2 and row == Constants.ROWS_NB - 2 and len(array) == 3:
-        print()
+    elif row_count < 2 and row == ROWS_NB - 2 and len(array) == 3:
+        b = 0
         # array.append(package_right_and_left_four_cells(board, row, col))
-    elif row_count < 2 and row < Constants.ROWS_NB - 2:
+    elif row_count < 2 and row < ROWS_NB - 2:
         get_nearest_cells_recursive_helper(board, row + 1, col, row_count + 1, array)
         get_regular_cells(array, board, col, row, row_count)
     return array
@@ -71,15 +71,15 @@ def get_regular_cells(array, board, col, row, row_count):
     if col > 1 + row_count:
         array.append(board[row + 1][col - 1 - row_count])
     array.append(board[row + 1][col])
-    if col < Constants.COLS_NB - 1 - row_count:
-        if board[row + 1][col + 1 + row_count] != Constants.BORDER:
+    if col < COLS_NB - 1 - row_count:
+        if board[row + 1][col + 1 + row_count] != BORDER:
             array.append(board[row + 1][col + 1 + row_count])
 
 
 def get_cells_when_too_close_to_ground(array, board, col, row):
     if col == 1:
         array.append(package_right_six_cells(board, row, col))
-    elif col == Constants.COLS_NB - 2:
+    elif col == COLS_NB - 2:
         array.append(package_right_six_cells(board, row, col - 3))
     else:
         array.append(package_right_and_left_cells(board, row, col))
@@ -103,7 +103,7 @@ def get_down(state, board):
     return {(new_row, new_col): (get_column_agent(board, new_row, new_col), get_nearest_cells(board, new_row, new_col))}
 
 
-def compute_cells():
+def compute_cells(board):
     pass
 
 
@@ -114,85 +114,116 @@ def set_board(board, state, column):
         board[row - i, col] = column[i]
 
 
-def update_env_state(env_state, new_state, column):
-    row = new_state[0]
-    col = new_state[1]
-    print(env_state[row, col][1][0])
-    print("len", len(env_state[row, col][1]))
-    # for i in range(len(env_state[row, col][1])):
-    #     env_state[row - i, col][1][i] = column[i]
-
-
 class Environment:
     def __init__(self):
-        self.__board = create_board(Constants.ROWS_NB, Constants.COLS_NB)
+        self.__board = create_board(ROWS_NB, COLS_NB)
         self.__states = {}
-        for row in range(self.__board.shape[0]):
-            for col in range(0, len(self.__board[row])):
-                if col != 0 and col != Constants.COLS_NB and row != Constants.ROWS_NB:
-                    self.__states[(row, col)] = [[row, col], get_column_agent(self.__board, row, col),
-                                                 get_nearest_cells(self.__board, row, col)]
-                    if col == 4 and row == 2:
-                        self.__start = (row, col)
-                elif row == Constants.ROWS_NB:
-                    self.__states[(row, col)] = [[], [Constants.GROUND], []]
-                else:
-                    self.__states[(row, col)] = [[], [Constants.BORDER], []]
+        self.update_states(self.__board)
+        self.__change_counter = 0
+        self.__lost = False
+        self.__round_ended = False
 
-                    # self.__states[(row, col)] = board[row][col]
-                # if row == GROUND:
-                # elif col == BORDER:
-                #    self.__states[(row, col)] = board[row][col]
-                # else:
-                #   self.__states[(row, col)] = board[row][col]
-        print(self.__board)
+    def reset(self):
+        self.__board = create_board(ROWS_NB, COLS_NB)
+        self.__states = {}
+        self.update_states(self.__board)
+        self.__change_counter = 0
+        self.isLost = False
+
+    def update_states(self, board):
+        for row in range(board.shape[0]):
+            for col in range(0, len(board[row])):
+                if col != 0 and col != COLS_NB and row != ROWS_NB:
+                    self.__states[(row, col)] = [[row, col], get_column_agent(board, row, col),
+                                                 get_nearest_cells(board, row, col)]
+                    if col == 4 and row == 0:
+                        self.__start = (row, col)
+                elif row == ROWS_NB:
+                    self.__states[(row, col)] = [[], [GROUND], []]
+                else:
+                    self.__states[(row, col)] = [[], [BORDER], []]
 
     def apply(self, agent, action):
         state = agent.state
         column = agent.column
-        if action == Constants.DOWN:
+        if action == DOWN:
             new_state = (state[0] + 1, state[1])
-        elif action == Constants.LEFT:
+        elif action == LEFT:
             new_state = (state[0], state[1] - 1)
-        elif action == Constants.RIGHT:
+        elif action == RIGHT:
             new_state = (state[0], state[1] + 1)
-        elif action == Constants.CHANGE:
+        elif action == CHANGE:
             column[0], column[1], column[2] = column[1], column[2], column[0]
-            new_state = state
+            self.__change_counter += 1
+            if self.__change_counter == 2:
+                self.__change_counter = 0
+                new_state = (state[0] + 1, state[1])
+            else:
+                new_state = state
         else:
             raise 'Unknown action'
 
         if new_state in self.__states:
-            print("self", self.__states)
-            print("new state", new_state)
             state = new_state
-            if self.__states[new_state][1][0] == Constants.BORDER:
-                reward = Constants.REWARD_BORDER
+            print("new ", self.__states[new_state])
+            if self.__states[new_state][1][0] == BORDER:
+                reward = REWARD_BORDER
                 state = agent.state
-            elif self.__states[new_state][1][0] == Constants.GROUND:
-                reward = Constants.REWARD_BORDER
+            elif self.__states[new_state][1][0] == GROUND:
+                reward = REWARD_BORDER
                 state = agent.state
                 set_board(self.__board, state, column)
-                print("board", self.__board)
-                print("la", agent.state)
-                # self.__board
-                compute_cells()
-            elif self.__states[new_state][1][0] != Constants.EMPTY:
-                reward = Constants.REWARD_BORDER
-                state = agent.state
-                if action == Constants.DOWN:
-                    compute_cells()
+                self.update_states(self.__board)
+                compute_cells(self.__board)
+            elif self.__states[new_state][1][0] != EMPTY:
+                print("non empty")
+                cell_down = (agent.state[0] + 1, agent.state[1])
+                if self.__states[cell_down][1][0] == EMPTY:
+                    print("agentState down", cell_down)
+                    state = agent.state
+                    reward = REWARD_BORDER
+                elif self.__states[new_state][0][0] < 2:
+                    reward = REWARD_LOSE
+                    self.__lost = True
+                    print("LOSE")
+                else:
+                    self.__round_ended = True
+                    reward = REWARD_BORDER
+                    state = agent.state
+                    set_board(self.__board, state, column)
+                    self.update_states(self.__board)
+                    if action == DOWN:
+                        compute_cells(self.__board)
+                    state = agent.state
+                    set_board(self.__board, state, column)
+                    self.update_states(self.__board)
             else:
-                reward = 0
+                reward = REWARD_TIME
         else:
-            reward = Constants.REWARD_LOSE
-        update_env_state(self.__states, state, column)
+            reward = REWARD_LOSE
+        print(self.__board)
         agent.update(state, action, reward)
         return reward
 
     # @property
     # def states(self):
     #     return self.__states.keys()
+
+    @property
+    def is_round_ended(self):
+        return self.__round_ended
+
+    @is_round_ended.setter
+    def is_round_ended(self, ended):
+        self.__round_ended = ended
+
+    @property
+    def isLost(self):
+        return self.__lost
+
+    @isLost.setter
+    def isLost(self, lost):
+        self.__lost = lost
 
     @property
     def start(self):
@@ -221,7 +252,7 @@ class Agent:
         self.__qtable = {}
         for s in self.__environment.states:
             self.__qtable[s] = {}
-            for a in Constants.ACTIONS:
+            for a in ACTIONS:
                 self.__qtable[s][a] = 0.0
         self.reset()
 
@@ -238,6 +269,10 @@ class Agent:
                 reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
         self.__state = state
         self.__score += reward
+
+    @property
+    def qtable(self):
+        return self.__qtable
 
     def best_action(self):
         best = None
@@ -258,18 +293,3 @@ class Agent:
     @column.setter
     def column(self, column):
         self.__column = column
-
-
-if __name__ == '__main__':
-    env = Environment()
-    agent = Agent(env)
-
-    for i in range(2):
-        agent.reset()
-        agent.column = [Constants.RED, Constants.YELLOW, Constants.GREEN]
-        # action = agent.best_action()
-        env.apply(agent, Constants.CHANGE)
-        for j in range(15):
-            env.apply(agent, Constants.DOWN)
-
-    print(env.values)
