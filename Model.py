@@ -1,4 +1,5 @@
 from Constants import *
+import update_board
 import numpy as np
 
 
@@ -103,8 +104,6 @@ def get_down(state, board):
     return {(new_row, new_col): (get_column_agent(board, new_row, new_col), get_nearest_cells(board, new_row, new_col))}
 
 
-def compute_cells(board):
-    pass
 
 
 def set_board(board, state, column):
@@ -116,6 +115,7 @@ def set_board(board, state, column):
 
 class Environment:
     def __init__(self):
+        self.is_next_round = False
         self.__board = create_board(ROWS_NB, COLS_NB)
         self.__states = {}
         self.update_states(self.__board)
@@ -129,6 +129,7 @@ class Environment:
         self.update_states(self.__board)
         self.__change_counter = 0
         self.isLost = False
+        self.__round_ended = False
 
     def update_states(self, board):
         for row in range(board.shape[0]):
@@ -165,18 +166,23 @@ class Environment:
 
         if new_state in self.__states:
             state = new_state
-            print("new ", self.__states[new_state])
+            self.__round_ended = False
+            print("column position", state)
             if self.__states[new_state][1][0] == BORDER:
                 reward = REWARD_BORDER
                 state = agent.state
             elif self.__states[new_state][1][0] == GROUND:
+                print("ground")
                 reward = REWARD_BORDER
                 state = agent.state
+                count = update_board.update_cells(self.__board, state)
+                self.__round_ended = True
                 set_board(self.__board, state, column)
                 self.update_states(self.__board)
-                compute_cells(self.__board)
+                print("count", count)
+                if count > 0:
+                    reward = REWARD_BREAK * count
             elif self.__states[new_state][1][0] != EMPTY:
-                print("non empty")
                 cell_down = (agent.state[0] + 1, agent.state[1])
                 if self.__states[cell_down][1][0] == EMPTY:
                     print("agentState down", cell_down)
@@ -187,13 +193,16 @@ class Environment:
                     self.__lost = True
                     print("LOSE")
                 else:
-                    self.__round_ended = True
                     reward = REWARD_BORDER
                     state = agent.state
                     set_board(self.__board, state, column)
                     self.update_states(self.__board)
                     if action == DOWN:
-                        compute_cells(self.__board)
+                        print("action down")
+                        count = update_board.update_cells(self.__board, state)
+                        self.__round_ended = True
+                        if count > 0:
+                            reward = REWARD_BREAK * count
                     state = agent.state
                     set_board(self.__board, state, column)
                     self.update_states(self.__board)
