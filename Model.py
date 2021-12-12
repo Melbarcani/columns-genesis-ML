@@ -7,9 +7,9 @@ def create_board(rows, cols):
     # matrix = np.arange(14 * 8).reshape(rows, cols)
     matrix = np.zeros((rows, cols))
     matrix.astype(int)
-    matrix[ROWS_NB - 1] = GROUND
     matrix[:, 0] = BORDER
     matrix[:, cols - 1] = BORDER
+    matrix[ROWS_NB - 1] = GROUND
     # matrix[1][1] = 9
     # matrix[:, 1] = 1
     # matrix[:, 2] = 2
@@ -18,10 +18,6 @@ def create_board(rows, cols):
     # matrix[:, 5] = 5
     # matrix[:, 6] = 6
     return matrix
-
-
-def check_clear_color():
-    pass
 
 
 def package_six_cells(board, row, col):
@@ -57,8 +53,7 @@ def get_nearest_cells(board, row, col):
 
 def get_nearest_cells_recursive_helper(board, row, col, row_count, array):
     if row_count < 2 and row == ROWS_NB - 2 and len(array) < 3:
-        a = 0
-        # get_cells_when_too_close_to_ground(array, board, col, row)
+        get_cells_when_too_close_to_ground(array, board, col, row)
     elif row_count < 2 and row == ROWS_NB - 2 and len(array) == 3:
         b = 0
         # array.append(package_right_and_left_four_cells(board, row, col))
@@ -80,7 +75,7 @@ def get_regular_cells(array, board, col, row, row_count):
 def get_cells_when_too_close_to_ground(array, board, col, row):
     if col == 1:
         array.append(package_right_six_cells(board, row, col))
-    elif col == COLS_NB - 2:
+    elif col == COLS_NB - 1:
         array.append(package_right_six_cells(board, row, col - 3))
     else:
         array.append(package_right_and_left_cells(board, row, col))
@@ -252,6 +247,9 @@ class Environment:
     def values(self):
         return self.__states.values()
 
+    def get(self, state):
+        return self.__states[state]
+
 
 class Agent:
     def __init__(self, environment, learning_rate=0.4, discount_factor=0.5):
@@ -279,7 +277,6 @@ class Agent:
         self.__qtable[self.__state][action] += self.__learning_rate * (
                 reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
         self.__state = state
-        print("reward", reward)
         self.__score += reward
 
     @property
