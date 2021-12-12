@@ -144,22 +144,7 @@ class Environment:
     def apply(self, agent, action):
         state = agent.state
         column = agent.column
-        if action == DOWN:
-            new_state = (state[0] + 1, state[1])
-        elif action == LEFT:
-            new_state = (state[0], state[1] - 1)
-        elif action == RIGHT:
-            new_state = (state[0], state[1] + 1)
-        elif action == CHANGE:
-            column[0], column[1], column[2] = column[1], column[2], column[0]
-            self.__change_counter += 1
-            if self.__change_counter == 2:
-                self.__change_counter = 0
-                new_state = (state[0] + 1, state[1])
-            else:
-                new_state = state
-        else:
-            raise 'Unknown action'
+        new_state = self.perform_actions(action, column, state)
 
         if new_state in self.__states:
             state = new_state
@@ -176,11 +161,13 @@ class Environment:
                 if current_column_row_position < 2:
                     reward = REWARD_LOSE
                     self.__lost = True
-                elif previous_position_cell_down == EMPTY:
-                    state = agent.state
-                    reward = REWARD_BORDER - (REWARD_ROW - state[0]) # state[0] == current row
+                    print("Lost")
+                # elif previous_position_cell_down == EMPTY:
+                #     print("ICI")
+                #     state = agent.state
+                #     reward = REWARD_BORDER - (REWARD_ROW - state[0])  # state[0] == current row
                 else:
-                    reward = REWARD_BORDER
+                    reward = REWARD_BORDER - (REWARD_ROW - state[0])  # state[0] == current row
                     state = agent.state
                     set_board(self.__board, state, column)
                     self.update_states(self.__board)
@@ -192,6 +179,25 @@ class Environment:
             reward = REWARD_LOSE
         agent.update(state, action, reward)
         return reward
+
+    def perform_actions(self, action, column, state):
+        if action == DOWN:
+            new_state = (state[0] + 1, state[1])
+        elif action == LEFT:
+            new_state = (state[0], state[1] - 1)
+        elif action == RIGHT:
+            new_state = (state[0], state[1] + 1)
+        elif action == CHANGE:
+            column[0], column[1], column[2] = column[1], column[2], column[0]
+            self.__change_counter += 1
+            if self.__change_counter == 2:
+                self.__change_counter = 0
+                new_state = (state[0] + 1, state[1])
+            else:
+                new_state = state
+        else:
+            raise 'Unknown action'
+        return new_state
 
     def perform_round_ended(self, column, state):
         set_board(self.__board, state, column)
@@ -274,7 +280,7 @@ class Agent:
                 reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
         self.__state = state
         if reward > 0:
-            print ("reward", reward)
+            print("reward", reward)
         self.__score += reward
 
     @property

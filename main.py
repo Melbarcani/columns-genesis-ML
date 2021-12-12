@@ -17,13 +17,13 @@ if __name__ == '__main__':
     for i in range(5):
         agent.reset()
         env.reset()
+
         while not env.isLost:
             agent.reset()
             env.is_round_ended = False
             agent.column = [random.randint(1, 6), random.randint(1, 6), random.randint(1, 6)]
             print(agent.column)
-            print("before \n", env.board)
-            while not env.is_round_ended:
+            while not env.is_round_ended and not env.isLost:
                 if seconds + 1 < calendar.timegm(time.gmtime()):
                     seconds = calendar.timegm(time.gmtime())
                     env.apply(agent, Constants.DOWN)
@@ -31,7 +31,8 @@ if __name__ == '__main__':
                     action = agent.best_action()
                     env.apply(agent, action)
             print("after \n", env.board)
-        print("score", agent.score)
+            print("score", agent.score)
+        print("final score", score)
 
     print(env.values)
     print(agent.qtable)
