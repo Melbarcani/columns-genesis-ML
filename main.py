@@ -19,6 +19,7 @@ if __name__ == '__main__':
         env.reset()
 
         while not env.isLost:
+            score = 0
             agent.reset()
             env.is_round_ended = False
             agent.column = [random.randint(1, 6), random.randint(1, 6), random.randint(1, 6)]
@@ -31,8 +32,9 @@ if __name__ == '__main__':
                     action = agent.best_action()
                     env.apply(agent, action)
             print("after \n", env.board)
+            score += agent.score
             print("score", agent.score)
-        print("final score", score)
+        print("final score", agent.score, score)
 
     print(env.values)
     print(agent.qtable)

@@ -172,7 +172,7 @@ class Environment:
                     set_board(self.__board, state, column)
                     self.update_states(self.__board)
                     if action == DOWN:
-                        reward = self.perform_round_ended(column, state)
+                        reward += self.perform_round_ended(column, state)
             else:
                 reward = REWARD_TIME
         else:
@@ -279,8 +279,7 @@ class Agent:
         self.__qtable[self.__state][action] += self.__learning_rate * (
                 reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
         self.__state = state
-        if reward > 0:
-            print("reward", reward)
+        print("reward", reward)
         self.__score += reward
 
     @property
