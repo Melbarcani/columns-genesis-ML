@@ -14,28 +14,24 @@ if __name__ == '__main__':
     env = Environment()
     agent = Agent(env)
     seconds = calendar.timegm(time.gmtime())
-    for i in range(30):
+    for i in range(5):
         agent.reset()
-        agent.column = [random.randint(1, 2), random.randint(1, 2), random.randint(1, 2)]
-        print("column", agent.column)
-        for j in range(40):
-            print("env.isLost ", env.isLost)
-            if env.isLost:
-                print(env.values)
-                agent.reset()
-                env.reset()
-                break
-            elif env.is_round_ended:
-                env.is_round_ended = False
-                break
-            else:
+        env.reset()
+        while not env.isLost:
+            agent.reset()
+            env.is_round_ended = False
+            agent.column = [random.randint(1, 6), random.randint(1, 6), random.randint(1, 6)]
+            print(agent.column)
+            print("before \n", env.board)
+            while not env.is_round_ended:
                 if seconds + 1 < calendar.timegm(time.gmtime()):
                     seconds = calendar.timegm(time.gmtime())
                     env.apply(agent, Constants.DOWN)
-                action = agent.best_action()
-                print("best action", action)
-                env.apply(agent, action)
-        print("ICIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII ", i)
+                else:
+                    action = agent.best_action()
+                    env.apply(agent, action)
+            print("after \n", env.board)
+        print("score", agent.score)
 
     print(env.values)
     print(agent.qtable)
