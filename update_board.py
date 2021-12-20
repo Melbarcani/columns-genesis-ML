@@ -5,7 +5,7 @@ import numpy as np
 def update_cells(board, cell):
     row = cell[0]
     col = cell[1]
-    print("inside\n", board)
+    # print("inside\n", board)
     cells_to_check = [(row, col), (row - 1, col), (row - 2, col)]
     count = empty_cells(board, cells_to_check, 0)
     return count, board

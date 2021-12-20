@@ -57,7 +57,7 @@ class ColumnsWindow(arcade.Window):
                     wall.center_x = 64 * y + 32
                     wall.center_y = self.height - SPRITE_SIZE * (x + 0.5)
                     self.wall_list.append(wall)
-                else :
+                else:
                     wall = arcade.Sprite(":resources:images/cards/cardBack_red4.png", TILE_SCALING)
                     wall.center_x = 64 * y + 32
                     wall.center_y = self.height - SPRITE_SIZE * (x + 0.5)

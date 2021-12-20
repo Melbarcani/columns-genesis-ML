@@ -1,30 +1,42 @@
 from Constants import *
+
+
+def get_key(state):
+    return state if type(state) is not list else tuple([item for sublist in state for item in sublist])
+
+
 class Agent:
-    def __init__(self, environment, learning_rate=0.4, discount_factor=0.5):
+    def __init__(self, environment, learning_rate=0.4, discount_factor=0.7):
+        self.__score = 0
         self.__environment = environment
         self.__learning_rate = learning_rate
         self.__discount_factor = discount_factor
         self.__column = [0, 0, 0]
-        self.__state = []
+        self.__state = ()
         self.__qtable = {}
-        for s in self.__environment.states:
-            self.__qtable[s] = {}
+        for s in self.__environment.values:
+            self.__qtable[get_key(s)] = {}
             for a in ACTIONS:
-                self.__qtable[s][a] = 0.0
+                self.__qtable[get_key(s)][a] = 0.0
         self.reset()
 
     def reset(self):
         self.__state = self.__environment.start
-        self.__score = 0
+        # self.__score = 0
 
     def update(self, state, action, reward):
         # Q(s, a) <- Q(s, a) + learning_rate *
         #                     [reward + discount_factor * max(Q(state)) - Q(s, a)]
+        key = get_key(state)
+        if key not in self.__qtable:
+            self.__qtable[key] = {}
+            for a in ACTIONS:
+                self.__qtable[key][a] = 0.0
 
-        maxQ = max(self.__qtable[state].values())
-        self.__qtable[self.__state][action] += self.__learning_rate * (
-                reward + self.__discount_factor * maxQ - self.__qtable[self.__state][action])
-        self.__state = state
+        maxQ = max(self.__qtable[key].values())
+        self.__qtable[key][action] += self.__learning_rate * (
+                reward + self.__discount_factor * maxQ - self.__qtable[key][action])
+        self.__state = key
         self.__score += reward
 
     @property
@@ -33,15 +45,24 @@ class Agent:
 
     def best_action(self):
         best = None
-        for a in self.__qtable[self.__state]:
-            if not best \
-                    or self.__qtable[self.__state][a] > self.__qtable[self.__state][best]:
-                best = a
+        key = get_key(self.__state)
+        if key not in self.__qtable:
+            best = CHANGE
+        else:
+            for a in self.__qtable[key]:
+                if not best \
+                        or self.__qtable[key][a] > self.__qtable[key][best]:
+                    best = a
         return best
 
     @property
     def state(self):
         return self.__state
+
+    @property
+    def position(self):
+        key = get_key(self.__state)
+        return key[0], key[1]
 
     @property
     def column(self):
@@ -54,3 +75,7 @@ class Agent:
     @property
     def score(self):
         return self.__score
+
+    @score.setter
+    def score(self, score):
+        self.__score = score
