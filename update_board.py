@@ -1,4 +1,4 @@
-from Constants import *
+from Constant import *
 import numpy as np
 
 
@@ -8,6 +8,7 @@ def update_cells(board, cell):
     # print("inside\n", board)
     cells_to_check = [(row, col), (row - 1, col), (row - 2, col)]
     count = empty_cells(board, cells_to_check, 0)
+    # count is the number of the broken cells
     return count, board
 
 

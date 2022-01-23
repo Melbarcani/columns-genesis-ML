@@ -1,4 +1,4 @@
-from Constants import *
+from Constant import *
 
 
 def get_key(state):
@@ -14,15 +14,12 @@ class Agent:
         self.__column = [0, 0, 0]
         self.__state = ()
         self.__qtable = {}
+        self.__position = ()
         for s in self.__environment.values:
             self.__qtable[get_key(s)] = {}
             for a in ACTIONS:
                 self.__qtable[get_key(s)][a] = 0.0
         self.reset()
-
-    def reset(self):
-        self.__state = self.__environment.start
-        # self.__score = 0
 
     def update(self, state, action, reward):
         # Q(s, a) <- Q(s, a) + learning_rate *
@@ -39,10 +36,6 @@ class Agent:
         self.__state = key
         self.__score += reward
 
-    @property
-    def qtable(self):
-        return self.__qtable
-
     def best_action(self):
         best = None
         key = get_key(self.__state)
@@ -55,14 +48,26 @@ class Agent:
                     best = a
         return best
 
+    def reset(self):
+        self.__position = (0, 4)
+        self.__state = self.__environment.start
+        self.__score = 0
+
+    @property
+    def qtable(self):
+        return self.__qtable
+
     @property
     def state(self):
         return self.__state
 
     @property
-    def position(self):
-        key = get_key(self.__state)
-        return key[0], key[1]
+    def score(self):
+        return self.__score
+
+    @score.setter
+    def score(self, score):
+        self.__score = score
 
     @property
     def column(self):
@@ -73,9 +78,9 @@ class Agent:
         self.__column = column
 
     @property
-    def score(self):
-        return self.__score
+    def position(self):
+        return self.__position
 
-    @score.setter
-    def score(self, score):
-        self.__score = score
+    @position.setter
+    def position(self, position):
+        self.__position = position
