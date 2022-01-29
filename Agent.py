@@ -1,3 +1,4 @@
+from decimal import Decimal
 from Constant import *
 
 
@@ -6,7 +7,7 @@ def get_key(state):
 
 
 class Agent:
-    def __init__(self, environment, learning_rate=0.4, discount_factor=0.7):
+    def __init__(self, environment, learning_rate=0.8, discount_factor=0.7):
         self.__score = 0
         self.__environment = environment
         self.__learning_rate = learning_rate
@@ -15,13 +16,23 @@ class Agent:
         self.__state = ()
         self.__qtable = {}
         self.__position = ()
+        self.__history = []
         for s in self.__environment.values:
             self.__qtable[get_key(s)] = {}
             for a in ACTIONS:
                 self.__qtable[get_key(s)][a] = 0.0
         self.reset()
 
+    def update_history(self):
+        self.__history.append(self.__score)
+
+    @property
+    def history(self):
+        return self.__history
+
     def update(self, state, action, reward):
+        if reward > 1:
+            print("reward", reward)
         # Q(s, a) <- Q(s, a) + learning_rate *
         #                     [reward + discount_factor * max(Q(state)) - Q(s, a)]
         key = get_key(state)
@@ -34,7 +45,9 @@ class Agent:
         self.__qtable[key][action] += self.__learning_rate * (
                 reward + self.__discount_factor * maxQ - self.__qtable[key][action])
         self.__state = key
-        self.__score += reward
+
+        self.__score += Decimal(reward)
+
 
     def best_action(self):
         best = None
@@ -49,9 +62,11 @@ class Agent:
         return best
 
     def reset(self):
+        self.__score = 0
+
+    def resetPosition(self):
         self.__position = (0, 4)
         self.__state = self.__environment.start
-        self.__score = 0
 
     @property
     def qtable(self):
