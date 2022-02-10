@@ -51,7 +51,7 @@ def append_cells_to_empty(board, row, col, dx, dy, cells_to_empty):
     content = board[row][col]
     if row + dx < ROWS_NB:
         next_content = board[row + dx][col + dy]
-        if content == next_content and content != 0:
+        if content == next_content and content != 0 and content != BORDER and content != GROUND:
             append_cells_to_empty(board, row + dx, col + dy, dx, dy, cells_to_empty)
             if not cells_to_empty.__contains__((row + dx, col + dy)):
                 cells_to_empty.append((row + dx, col + dy))
@@ -59,7 +59,7 @@ def append_cells_to_empty(board, row, col, dx, dy, cells_to_empty):
 
 def check_value(board, row, col, dx, dy, count):
     content = board[row][col]
-    if row + dx < 14:
+    if row + dx < ROWS_NB and 0 < col + dy < COLS_NB:
         next_content = board[row + dx][col + dy]
         if content == next_content and content != 0:
             return check_value(board, row + dx, col + dy, dx, dy, count) + 1
