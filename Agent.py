@@ -9,7 +9,8 @@ def get_key(state):
 
 
 class Agent:
-    def __init__(self, environment, learning_rate=0.8, discount_factor=0.1):
+    def __init__(self, environment, learning_rate=0.9, discount_factor=0.1):
+        self.__score_break = 0
         self.__score = 0
         self.__environment = environment
         self.__learning_rate = learning_rate
@@ -20,17 +21,23 @@ class Agent:
         self.__position = ()
         self.__history = []
         self.__actions = [0, 0, 0, 0]
-        self.__exploration = 1.0
+        self.__exploration = EXPLORATION
         for s in self.__environment.values:
             self.set_random_action(get_key(s))
         self.reset()
 
     def update_history(self):
-        self.__history.append(self.__score)
+        self.__history.append(self.__score_break)
 
     @property
     def history(self):
         return self.__history
+
+    def set_new_state(self, new_state):
+        key = get_key(new_state)
+        if key not in self.__qtable:
+            self.set_random_action(key)
+        self.__state = new_state
 
     def update(self, state, action, reward):
         # if reward > 1:
@@ -51,14 +58,14 @@ class Agent:
     def set_random_action(self, key):
         self.__qtable[key] = {}
         for a in ACTIONS:
-            self.__qtable[key][a] = 0.25  # random() * 10.0
+            self.__qtable[key][a] = 1  # random() * 10.0
 
     def best_action(self):
         best = None
         key = get_key(self.__state)
         if random() < self.__exploration:
             best = choice(list(self.__qtable[key]))  # une action au hasard
-            self.__exploration *= 0.1
+            self.__exploration *= 0.999
         else:
             for a in self.__qtable[key]:
                 if not best \
@@ -76,6 +83,7 @@ class Agent:
 
     def reset(self):
         self.__score = 0
+        self.__score_break = 0
         self.__actions = [0, 0, 0, 0]
 
     def resetPosition(self):
@@ -109,6 +117,14 @@ class Agent:
     @score.setter
     def score(self, score):
         self.__score = score
+
+    @property
+    def score_break(self):
+        return self.__score_break
+
+    @score_break.setter
+    def score_break(self, score):
+        self.__score_break = score
 
     @property
     def exploration(self):
