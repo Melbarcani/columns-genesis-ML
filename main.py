@@ -16,8 +16,8 @@ if __name__ == '__main__':
     # window.setup()
     # arcade.run()
     if os.path.exists(agent_filename):
-        #agent.load(agent_filename)
-        pass
+        agent.load(agent_filename)
+        #pass
 
     for i in range(15):
         exploration = agent.exploration
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         # print("Exploration", exploration)
         # print(env.board)
         # print("number", actionsNumber)
-    #agent.save(agent_filename)
+    agent.save(agent_filename)
     #print(agent.qtable, len(agent.qtable))
     plt.plot(agent.history)
     plt.show()

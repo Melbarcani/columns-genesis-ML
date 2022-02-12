@@ -92,7 +92,7 @@ class Agent:
 
     def save(self, filename):
         with open(filename, 'wb') as file:
-            pickle.dump(self.__qtable, file)
+            pickle.dump(self.__qtable, file, pickle.HIGHEST_PROTOCOL)
 
     def load(self, filename):
         with open(filename, 'rb') as file:
