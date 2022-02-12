@@ -170,7 +170,7 @@ class Environment:
                         count, self.__board = Update_board.update_cells(self.__board, position)
                         agent.score_break += reward if count > 0 else 0
                         self.__round_ended = True
-                        reward = REWARD_BREAK * count if count > 0 else -1  # check to set to 0
+                        reward = REWARD_BREAK * count if count > 0 else REWARD_ON_TOP  # check to set to 0
                         #print("count", count, "BREAK", REWARD_BREAK, "after break", reward)
             else:
                 set_new_column_in_board(self.__board, new_position, old_column, position)

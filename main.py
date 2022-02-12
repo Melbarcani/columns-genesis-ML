@@ -19,7 +19,7 @@ if __name__ == '__main__':
         #agent.load(agent_filename)
         pass
 
-    for i in range(100):
+    for i in range(15):
         exploration = agent.exploration
         agent.reset()
         agent.exploration = exploration
@@ -48,12 +48,12 @@ if __name__ == '__main__':
         #print(agent.score_break)
 
         agent.update_history()
-        # print("score de l'agent", agent.score)
+        print("score de l'agent", agent.score)
         # print("Exploration", exploration)
         # print(env.board)
         # print("number", actionsNumber)
     #agent.save(agent_filename)
-    print(agent.qtable, len(agent.qtable))
+    #print(agent.qtable, len(agent.qtable))
     plt.plot(agent.history)
     plt.show()
 

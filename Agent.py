@@ -9,7 +9,7 @@ def get_key(state):
 
 
 class Agent:
-    def __init__(self, environment, learning_rate=0.9, discount_factor=0.1):
+    def __init__(self, environment, learning_rate=1, discount_factor=1):
         self.__score_break = 0
         self.__score = 0
         self.__environment = environment
