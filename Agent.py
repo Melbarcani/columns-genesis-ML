@@ -40,10 +40,6 @@ class Agent:
         self.__state = new_state
 
     def update(self, state, action, reward):
-        # if reward > 1:
-        # print("reward", reward)
-        # Q(s, a) <- Q(s, a) + learning_rate *
-        #                     [reward + discount_factor * max(Q(state)) - Q(s, a)]
         key = get_key(state)
         if key not in self.__qtable:
             self.set_random_action(key)
@@ -58,14 +54,14 @@ class Agent:
     def set_random_action(self, key):
         self.__qtable[key] = {}
         for a in ACTIONS:
-            self.__qtable[key][a] = 1  # random() * 10.0
+            self.__qtable[key][a] = random() * 10
 
     def best_action(self):
         best = None
         key = get_key(self.__state)
         if random() < self.__exploration:
             best = choice(list(self.__qtable[key]))  # une action au hasard
-            self.__exploration *= 0.999
+            self.__exploration *= 0.999999
         else:
             for a in self.__qtable[key]:
                 if not best \

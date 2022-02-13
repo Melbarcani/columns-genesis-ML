@@ -5,7 +5,6 @@ from Constant import *
 
 
 def create_board(rows, cols):
-    # matrix = np.arange(14 * 8).reshape(rows, cols)
     matrix = np.zeros((rows, cols))
     matrix.astype(int)
     matrix[:, 0] = BORDER
@@ -14,13 +13,6 @@ def create_board(rows, cols):
     matrix[:, cols - 2] = BORDER
     matrix[ROWS_NB - 1] = GROUND
     matrix[ROWS_NB - 2] = GROUND
-    # matrix[1][1] = 9
-    # matrix[:, 1] = 1
-    # matrix[:, 2] = 2
-    # matrix[:, 3] = 3
-    # matrix[:, 4] = 4
-    # matrix[:, 5] = 5
-    # matrix[:, 6] = 6
     return matrix
 
 
@@ -49,8 +41,8 @@ def get_nearest_cells(board, row, col):
             else:
                 array.append(board[row + i][col + i])
                 array.append(board[row + i][col - i])
-                array.append(board[row][col + i])
-                array.append(board[row][col - i])
+                #array.append(board[row][col + i])
+                #array.append(board[row][col - i])
                 #array.append(board[row - 1][col + i])
                 #array.append(board[row - 1][col - i])
                 #array.append(board[row - 2][col + i])
@@ -124,27 +116,25 @@ class Environment:
     def update_position_and_column__states(self, board, position, column):
         row = position[0]
         col = position[1]
-        self.__states[(row, col)] = [column, get_nearest_cells(board, row, col)]
+        self.__states[(row, col)] = [[row], column, get_nearest_cells(board, row, col)]
 
     def apply(self, agent, action):
-        # remove_previous_colunm(self._previous_col)
         position = tuple(agent.position)
         old_column = agent.column
         new_position, new_column = self.perform_actions(action, old_column, position)
         old_board = self.__board.copy()
         reward = 0
-        is_change_opered = False
+        is_change_operated = False
 
         if new_position in self.__states:
             self.__actionsNumber += 1
             if action == CHANGE:
                 agent.column = new_column
                 reward = REWARD_CHANGE
-                is_change_opered = True
+                is_change_operated = True
             elif old_board[new_position[0]][new_position[1]] == BORDER:
                 reward = REWARD_BORDER
                 new_position = position
-                #set_column_in_board(self.__board, position, old_column)
             elif old_board[new_position[0]][new_position[1]] == GROUND:
                 set_column_in_board(self.__board, position, old_column)
                 count, self.__board = Update_board.update_cells(self.__board, position)
@@ -152,26 +142,22 @@ class Environment:
                 reward = REWARD_BREAK * count if count > 0 else REWARD_GROUND
                 agent.score_break += reward if count > 0 else 0
                 new_position = position
-                #print("GROUND count", count, "BREAK", REWARD_BREAK, "after break", reward)
             elif old_board[new_position] != EMPTY:
                 current_column_row_position = position[0]
-                if current_column_row_position < 2:
+                if current_column_row_position < 2 and action == DOWN:
                     reward = REWARD_LOSE
                     set_column_in_board(self.__board, position, old_column)
                     self.__round_ended = True
                     self.__lost = True
-                    # print("Lost")
-                    # return reward
                 elif action == RIGHT or action == LEFT:
                     reward = REWARD_BORDER
                     new_position = position
                 else:
                     if action == DOWN:
                         count, self.__board = Update_board.update_cells(self.__board, position)
-                        agent.score_break += reward if count > 0 else 0
                         self.__round_ended = True
-                        reward = REWARD_BREAK * count if count > 0 else REWARD_ON_TOP  # check to set to 0
-                        #print("count", count, "BREAK", REWARD_BREAK, "after break", reward)
+                        reward = REWARD_BREAK * count if count > 0 else REWARD_ON_TOP
+                        agent.score_break += reward if count > 0 else 0
             else:
                 set_new_column_in_board(self.__board, new_position, old_column, position)
                 if action == DOWN:
@@ -185,7 +171,7 @@ class Environment:
         self.update_position_and_column__states(old_board, position, old_column)
         state = self.__states.get(position)
         agent.update(state, action, reward)
-        if is_change_opered:
+        if is_change_operated:
             set_new_column_in_board(self.__board, new_position, new_column, position)
             old_column = new_column
         self.update_position_and_column__states(self.__board, new_position, old_column)

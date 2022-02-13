@@ -17,9 +17,8 @@ if __name__ == '__main__':
     # arcade.run()
     if os.path.exists(agent_filename):
         agent.load(agent_filename)
-        #pass
 
-    for i in range(15):
+    for i in range(2):
         exploration = agent.exploration
         agent.reset()
         agent.exploration = exploration
@@ -43,39 +42,14 @@ if __name__ == '__main__':
                     counter = (counter + 1) if action != DOWN else 0
                     old_action = action
                     env.apply(agent, action)
-                    # print("action", action)
-        #print(env.board)
-        #print(agent.score_break)
+        if i % 10000 == 0:
+            print("i ", i, "score break", agent.score_break, "score", agent.score)
+            print(env.board)
+            print("Exploration", exploration)
+
 
         agent.update_history()
-        print("score de l'agent", agent.score)
-        # print("Exploration", exploration)
-        # print(env.board)
-        # print("number", actionsNumber)
     agent.save(agent_filename)
-    #print(agent.qtable, len(agent.qtable))
     plt.plot(agent.history)
     plt.show()
 
-    # seconds = calendar.timegm(time.gmtime())
-    # for i in range(2):
-    #     agent.reset()
-    #     agent.score = 0
-    #     env.reset()
-    #     while not env.isLost:
-    #         agent.reset()
-    #         env.is_round_ended = False
-    #         agent.column = [random.randint(1, 3), random.randint(1, 3), random.randint(1, 3)]
-    #         # print(agent.column)
-    #         while not env.is_round_ended and not env.isLost:
-    #             if seconds + 3 < calendar.timegm(time.gmtime()):
-    #                 seconds = calendar.timegm(time.gmtime())
-    #                 env.apply(agent, DOWN)
-    #             else:
-    #                 action = agent.best_action()
-    #                 env.apply(agent, action)
-    #         print("after \n", env.board)
-    #     print("final score", agent.score)
-    # print(len(env.values))
-    # print(len(agent.qtable))
-    # print(agent.qtable)
