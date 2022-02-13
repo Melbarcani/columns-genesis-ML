@@ -18,7 +18,7 @@ if __name__ == '__main__':
     if os.path.exists(agent_filename):
         agent.load(agent_filename)
 
-    for i in range(2):
+    for i in range(10):
         exploration = agent.exploration
         agent.reset()
         agent.exploration = exploration
@@ -42,7 +42,7 @@ if __name__ == '__main__':
                     counter = (counter + 1) if action != DOWN else 0
                     old_action = action
                     env.apply(agent, action)
-        if i % 10000 == 0:
+        if i % 100 == 0:
             print("i ", i, "score break", agent.score_break, "score", agent.score)
             print(env.board)
             print("Exploration", exploration)

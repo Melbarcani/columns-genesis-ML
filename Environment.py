@@ -41,8 +41,8 @@ def get_nearest_cells(board, row, col):
             else:
                 array.append(board[row + i][col + i])
                 array.append(board[row + i][col - i])
-                #array.append(board[row][col + i])
-                #array.append(board[row][col - i])
+                array.append(board[row][col + i])
+                array.append(board[row][col - i])
                 #array.append(board[row - 1][col + i])
                 #array.append(board[row - 1][col - i])
                 #array.append(board[row - 2][col + i])
@@ -134,14 +134,13 @@ class Environment:
                 is_change_operated = True
             elif old_board[new_position[0]][new_position[1]] == BORDER:
                 reward = REWARD_BORDER
-                new_position = position
+                agent.position = position
             elif old_board[new_position[0]][new_position[1]] == GROUND:
                 set_column_in_board(self.__board, position, old_column)
                 count, self.__board = Update_board.update_cells(self.__board, position)
                 self.__round_ended = True
                 reward = REWARD_BREAK * count if count > 0 else REWARD_GROUND
                 agent.score_break += reward if count > 0 else 0
-                new_position = position
             elif old_board[new_position] != EMPTY:
                 current_column_row_position = position[0]
                 if current_column_row_position < 2 and action == DOWN:
@@ -151,7 +150,6 @@ class Environment:
                     self.__lost = True
                 elif action == RIGHT or action == LEFT:
                     reward = REWARD_BORDER
-                    new_position = position
                 else:
                     if action == DOWN:
                         count, self.__board = Update_board.update_cells(self.__board, position)
@@ -166,16 +164,16 @@ class Environment:
                     reward = REWARD_MOVE
                 agent.position = new_position
         else:
-            reward = REWARD_LOSE
+            raise 'Unknown action'
 
-        self.update_position_and_column__states(old_board, position, old_column)
-        state = self.__states.get(position)
+        self.update_position_and_column__states(old_board, new_position, old_column)
+        state = self.__states.get(new_position)
         agent.update(state, action, reward)
         if is_change_operated:
             set_new_column_in_board(self.__board, new_position, new_column, position)
             old_column = new_column
         self.update_position_and_column__states(self.__board, new_position, old_column)
-        agent.set_new_state(self.__states.get(new_position))
+        #agent.set_new_state(self.__states.get(new_position))
         return reward
 
     def perform_ground_reached(self, position, column, old_board):

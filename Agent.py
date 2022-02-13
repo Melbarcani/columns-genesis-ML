@@ -9,7 +9,7 @@ def get_key(state):
 
 
 class Agent:
-    def __init__(self, environment, learning_rate=1, discount_factor=1):
+    def __init__(self, environment, learning_rate=0.8, discount_factor=0.5):
         self.__score_break = 0
         self.__score = 0
         self.__environment = environment
@@ -22,6 +22,7 @@ class Agent:
         self.__history = []
         self.__actions = [0, 0, 0, 0]
         self.__exploration = EXPLORATION
+        self.__key = ()
         for s in self.__environment.values:
             self.set_random_action(get_key(s))
         self.reset()
@@ -44,21 +45,31 @@ class Agent:
         if key not in self.__qtable:
             self.set_random_action(key)
 
+        #print("key dans update", self.__qtable[key])
+        if self.__key not in self.__qtable:
+            self.set_random_action(self.__key)
+        #print("self dans update AVANT", self.__qtable[self.__key])
+
         maxQ = max(self.__qtable[key].values())
-        self.__qtable[key][action] += self.__learning_rate * (
-                reward + self.__discount_factor * maxQ - self.__qtable[key][action])
-        self.__state = key
+        self.__qtable[self.__key][action] += self.__learning_rate * (
+                reward + self.__discount_factor * maxQ - self.__qtable[self.__key][action])
+        #print("self dans update APRES",self.__qtable[self.__key])
+        self.__key = key
+        #print("key dans update A LA FIN", self.__qtable[key])
 
         self.__score += Decimal(reward)
 
     def set_random_action(self, key):
         self.__qtable[key] = {}
         for a in ACTIONS:
-            self.__qtable[key][a] = random() * 10
+            self.__qtable[key][a] = 0#random() * 10
 
     def best_action(self):
         best = None
-        key = get_key(self.__state)
+        if self.__key not in self.__qtable:
+            self.set_random_action(self.__key)
+        key = self.__key
+        #print(self.__qtable[key])
         if random() < self.__exploration:
             best = choice(list(self.__qtable[key]))  # une action au hasard
             self.__exploration *= 0.999999
