@@ -1,5 +1,5 @@
 COLS_NB = 10
-ROWS_NB = 18
+ROWS_NB = 16
 
 BORDER = -1
 GROUND = -2
